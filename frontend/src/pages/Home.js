@@ -4,7 +4,6 @@ import { motion } from "framer-motion";
 import { ArrowRight, Star, Truck, ShieldCheck, CreditCard, Gift } from "lucide-react";
 import { api } from "@/api";
 import LogoMark from "@/components/LogoMark";
-import heroEditorial from "@/assets/hero-editorial.jpg";
 import introCampaign from "@/assets/intro-campaign.jpg";
 import introExtLeft from "@/assets/intro-ext-left.jpg";
 import introExtRight from "@/assets/intro-ext-right.jpg";
@@ -18,7 +17,7 @@ const EASE = [0.16, 1, 0.3, 1];
 /* 1 — Écran d'introduction : campagne plein écran (100vw × 100svh, aucun bord vide) */
 function Intro() {
   const onDiscover = () => {
-    const el = document.getElementById("zev-hero");
+    const el = document.querySelector("[data-testid=bestsellers-section]");
     if (!el) return;
     if (window.__lenis) window.__lenis.scrollTo(el, { duration: 1.2 });
     else el.scrollIntoView({ behavior: "smooth" });
@@ -87,64 +86,8 @@ function Intro() {
   );
 }
 
-/* 2 — Hero de marque — image éditoriale principale (cadrages desktop/mobile indépendants) */
-function Hero() {
-  return (
-    <section
-      id="zev-hero"
-      className="relative min-h-[100svh] overflow-hidden bg-white"
-      data-testid="zev-hero"
-    >
-      <div className="relative min-h-[100svh] max-w-[1400px] mx-auto px-6 sm:px-10 grid lg:grid-cols-2 gap-10 lg:gap-16 items-center pt-36 pb-14 lg:pt-24 lg:pb-0">
-        {/* texte — éléments conservés à l'identique */}
-        <div className="text-center lg:text-left">
-          <span className="block overflow-hidden">
-            <motion.span
-              className="block font-display font-extrabold uppercase text-3xl sm:text-5xl lg:text-6xl tracking-tight text-black leading-none"
-              initial={{ y: "110%" }}
-              animate={{ y: "0%" }}
-              transition={{ duration: 1, delay: 0.15, ease: EASE }}
-              data-testid="hero-title"
-            >
-              NEW&nbsp;ARRIVALS
-            </motion.span>
-          </span>
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.9, delay: 0.45, ease: EASE }}
-          >
-            <Link
-              to="/catalogue"
-              data-testid="hero-discover-button"
-              className="inline-flex items-center gap-2 mt-6 font-tech text-[11px] tracking-[0.35em] text-black border-b border-black pb-1 hover:opacity-60 transition-opacity duration-300"
-            >
-              DÉCOUVRIR&nbsp;LA&nbsp;COLLECTION
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-          </motion.div>
-        </div>
-
-        {/* image éditoriale — mobile : cadre vertical resserré, personnage entier ;
-            desktop : grande composition latérale, personnage prioritaire */}
-        <motion.div
-          initial={{ opacity: 0, scale: 1.04 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1.2, delay: 0.3, ease: EASE }}
-          className="relative h-[56svh] w-[86%] mx-auto lg:mx-0 lg:w-full lg:h-[86svh] overflow-hidden border border-black/10"
-          data-testid="hero-editorial"
-        >
-          <img
-            src={heroEditorial}
-            alt="ZEV SHOP — campagne éditoriale"
-            draggable="false"
-            className="absolute inset-0 w-full h-full object-cover object-[68%_30%] lg:object-[70%_36%]"
-          />
-        </motion.div>
-      </div>
-    </section>
-  );
-}
+/* 2 — [SECTION SUPPRIMÉE] Ancienne section "NEW ARRIVALS" avec image éditoriale
+   verte retirée à la demande du client — seule l'image rouge d'intro est conservée. */
 
 /* Sections produit génériques — fonctionnent automatiquement avec de vraies données.
    `items` peut être soit une liste de groupes (nouveau format, GROUPED_PRODUCTS), soit
@@ -437,7 +380,6 @@ export default function Home() {
   return (
     <>
       <Intro />
-      <Hero />
       <Marquee />
       <ProductSection
         testid="bestsellers-section"
