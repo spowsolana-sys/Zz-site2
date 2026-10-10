@@ -88,10 +88,12 @@ export default function ProductCard({ product, group, feature = false }) {
         <Heart className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-colors ${wished ? "fill-black text-black" : "text-black/50"}`} />
       </button>
 
-      {/* Zone image — fond gris très léger pour séparer visuellement les cartes */}
+      {/* Zone image — fond gris très léger pour séparer visuellement les cartes
+          Sur mobile : aspect 4/3 + léger agrandissement interne (1.08) pour mettre
+          la chaussure davantage en avant. Desktop inchangé (3/2 et scale 1). */}
       <div
         className={`relative flex items-center justify-center overflow-hidden bg-[#F5F5F5] ${
-          feature ? "aspect-[16/9]" : "aspect-[3/2]"
+          feature ? "aspect-[16/9]" : "aspect-[4/3] sm:aspect-[3/2]"
         }`}
       >
         <div
@@ -103,7 +105,7 @@ export default function ProductCard({ product, group, feature = false }) {
         />
         {/* présentation premium 2.5D : lévitation idle subtile + inclinaison curseur */}
         <div
-          className="relative w-full h-full"
+          className="relative w-full h-full scale-[1.08] sm:scale-100"
           {...tilt.bind}
           style={{ perspective: 900 }}
         >
@@ -165,7 +167,7 @@ export default function ProductCard({ product, group, feature = false }) {
           </ShoeFloat>
         </div>
         {indexLabel && (
-          <span className="absolute top-3 left-3 sm:top-4 sm:left-5 font-tech text-[9px] sm:text-[10px] tracking-[0.3em] sm:tracking-[0.35em] text-black/35">
+          <span className="absolute top-2 left-2 sm:top-4 sm:left-5 font-tech text-[8px] sm:text-[10px] tracking-[0.25em] sm:tracking-[0.35em] text-black/35">
             {indexLabel}
           </span>
         )}
@@ -175,26 +177,28 @@ export default function ProductCard({ product, group, feature = false }) {
         </span>
       </div>
 
-      <div className="px-3 py-3 sm:px-5 sm:py-4 border-t border-black/10">
-        <h3 className="font-display text-[13px] sm:text-base font-bold text-black leading-snug truncate">
+      <div className="px-2 py-2 sm:px-5 sm:py-4 border-t border-black/10">
+        <h3 className="font-display text-[11px] sm:text-base font-bold text-black leading-[1.2] sm:leading-snug line-clamp-2 sm:line-clamp-none sm:truncate">
           {active.productTitle}
         </h3>
-        <div className="flex items-center justify-between gap-2 mt-1 sm:mt-1.5">
-          <p className="font-tech text-[9px] sm:text-[10px] tracking-[0.2em] sm:tracking-[0.25em] text-black/45 uppercase truncate">
+        <div className="flex items-center justify-between gap-1.5 sm:gap-2 mt-0.5 sm:mt-1.5">
+          <p className="font-tech text-[9px] sm:text-[10px] tracking-[0.15em] sm:tracking-[0.25em] text-black/45 uppercase truncate">
             {active.selectedOptions.Color}
           </p>
           <p
-            className="font-tech text-[10px] sm:text-[11px] tracking-[0.15em] sm:tracking-[0.2em] text-black/55 shrink-0"
+            className="font-tech text-[9px] sm:text-[11px] tracking-[0.1em] sm:tracking-[0.2em] text-black/55 shrink-0"
             data-testid={`product-card-price-${active.id}`}
           >
             {priceLabel(active)}
           </p>
         </div>
 
-        {/* Pastilles de coloris — affichées uniquement si plusieurs variantes */}
+        {/* Pastilles de coloris — affichées uniquement si plusieurs variantes
+            Mobile : point visible ~10 px dans une zone tactile ~42 px (padding).
+            Desktop : inchangé (24 px). */}
         {multi && (
           <div
-            className="flex items-center gap-2 sm:gap-2.5 mt-3 sm:mt-3.5 flex-wrap"
+            className="flex items-center gap-0.5 sm:gap-2.5 mt-1 sm:mt-3.5 flex-wrap -ml-2 sm:ml-0"
             data-testid={`product-card-swatches-${active.productHandle}`}
           >
             {variants.map((v) => {
@@ -207,18 +211,16 @@ export default function ProductCard({ product, group, feature = false }) {
                   aria-label={`Choisir ${v.selectedOptions.Color}`}
                   aria-pressed={isActive}
                   data-testid={`product-card-swatch-${v.id}`}
-                  className="relative flex items-center justify-center w-7 h-7 sm:w-6 sm:h-6 rounded-full cursor-pointer transition-transform duration-200 active:scale-95 hover:scale-110 focus:outline-none"
+                  className="relative flex items-center justify-center cursor-pointer transition-transform duration-200 active:scale-90 hover:scale-110 focus:outline-none p-2 sm:p-0 sm:w-6 sm:h-6"
                   style={{ touchAction: "manipulation" }}
                 >
-                  {/* Zone tactile élargie invisible — garantit 44x44 sur mobile */}
-                  <span aria-hidden="true" className="absolute inset-[-8px] sm:inset-[-6px]" />
                   <span
                     aria-hidden="true"
-                    className="w-full h-full rounded-full"
+                    className="block w-2.5 h-2.5 sm:w-full sm:h-full rounded-full"
                     style={{
                       background: v.swatch,
                       boxShadow: isActive
-                        ? "0 0 0 1.5px #fff, 0 0 0 2.5px #0A0A0A"
+                        ? "0 0 0 1px #fff, 0 0 0 1.5px #0A0A0A"
                         : "inset 0 0 0 1px rgba(0,0,0,0.12)",
                     }}
                   />
