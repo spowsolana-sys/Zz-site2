@@ -246,7 +246,7 @@ export default function Header() {
           <Link to="/" data-testid="brand-logo" className="flex items-center gap-3">
             <LogoMark className="w-9 h-9" variant={immersive ? "light" : "dark"} />
             <span
-              className={`font-display text-sm font-extrabold tracking-[0.25em] transition-colors duration-500 ${
+              className={`font-brand text-sm font-extrabold tracking-[0.25em] transition-colors duration-500 ${
                 immersive ? "text-white" : "text-black"
               }`}
             >
@@ -369,7 +369,7 @@ export default function Header() {
             <div className="h-16 mt-8 flex items-center justify-between px-6 border-b border-black/5">
               <div className="flex items-center gap-3">
                 <LogoMark className="w-9 h-9" />
-                <span className="font-display text-sm font-extrabold tracking-[0.25em]">
+                <span className="font-brand text-sm font-extrabold tracking-[0.25em]">
                   ZEV&nbsp;SHOP
                 </span>
               </div>

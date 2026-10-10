@@ -8,7 +8,7 @@ const EASE = [0.16, 1, 0.3, 1];
 
 /* Styles pills unifiés — fond gris perle #F3F4F6, sélection noire. */
 const PILL_BASE =
-  "inline-flex items-center justify-center font-tech tracking-[0.2em] rounded-full transition-colors duration-200 cursor-pointer select-none";
+  "inline-flex items-center justify-center font-tech font-semibold tracking-[0.1em] rounded-full transition-colors duration-200 cursor-pointer select-none";
 const PILL_IDLE =
   "bg-[#F3F4F6] text-black/60 hover:bg-[#E5E7EB] hover:text-black";
 const PILL_ACTIVE = "bg-black text-white";
@@ -66,7 +66,7 @@ export default function Catalogue() {
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: EASE }}
-          className="font-tech text-[10px] tracking-[0.45em] text-black/45"
+          className="font-tech text-[11px] font-semibold tracking-[0.3em] text-black/45"
         >
           BOUTIQUE&nbsp;ZEV&nbsp;SHOP
         </motion.p>
@@ -74,10 +74,11 @@ export default function Catalogue() {
           initial={{ opacity: 0, y: 22 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.1, ease: EASE }}
-          className="font-display font-extrabold uppercase text-3xl sm:text-5xl lg:text-6xl mt-4 text-black leading-none"
+          className="font-display font-extrabold uppercase text-[2.25rem] sm:text-5xl lg:text-6xl mt-4 text-black leading-[0.95]"
           data-testid="catalogue-title"
         >
-          NOTRE&nbsp;SÉLECTION
+          NOTRE<br className="sm:hidden" aria-hidden="true" />
+          <span className="hidden sm:inline">&nbsp;</span>SÉLECTION
         </motion.h1>
       </header>
 
@@ -87,12 +88,16 @@ export default function Catalogue() {
           type="button"
           onClick={() => setShowFilters((s) => !s)}
           data-testid="filters-toggle"
-          className="flex items-center gap-2 font-tech text-[10px] tracking-[0.3em] text-black/60 hover:text-black transition-colors cursor-pointer"
+          aria-expanded={showFilters}
+          className="inline-flex items-center gap-2.5 font-tech text-[11px] font-semibold tracking-[0.14em] text-black/70 hover:text-black px-3 py-2.5 -ml-3 rounded-lg hover:bg-black/[0.03] active:bg-black/[0.06] transition-colors cursor-pointer"
         >
-          <SlidersHorizontal className="w-4 h-4" />
+          <SlidersHorizontal className="w-4 h-4" strokeWidth={1.9} />
           FILTRES
           {activeFilterCount > 0 && (
-            <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1.5 rounded-full bg-black text-white text-[9px] tracking-normal">
+            <span
+              className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1.5 rounded-full bg-black text-white text-[9px] font-bold tracking-normal"
+              data-testid="filters-active-count"
+            >
               {activeFilterCount}
             </span>
           )}
@@ -125,7 +130,7 @@ export default function Catalogue() {
           data-testid="filters-panel"
         >
           <div>
-            <p className="font-tech text-[9px] tracking-[0.35em] text-black/40 mb-3">MARQUES</p>
+            <p className="font-tech text-[10px] font-semibold tracking-[0.2em] text-black/50 mb-3">MARQUES</p>
             <div className="flex items-center gap-2 flex-wrap">
               {BRANDS.map((b) => {
                 const active = fBrands.includes(b);
@@ -145,7 +150,7 @@ export default function Catalogue() {
             </div>
           </div>
           <div>
-            <p className="font-tech text-[9px] tracking-[0.35em] text-black/40 mb-3">TAILLE</p>
+            <p className="font-tech text-[10px] font-semibold tracking-[0.2em] text-black/50 mb-3">TAILLE</p>
             <div className="flex items-center gap-2 flex-wrap">
               <button
                 type="button"
@@ -169,7 +174,7 @@ export default function Catalogue() {
             </div>
           </div>
           <div>
-            <p className="font-tech text-[9px] tracking-[0.35em] text-black/40 mb-3">DISPONIBILITÉ</p>
+            <p className="font-tech text-[10px] font-semibold tracking-[0.2em] text-black/50 mb-3">DISPONIBILITÉ</p>
             <button
               type="button"
               onClick={() => setFAvail((a) => !a)}

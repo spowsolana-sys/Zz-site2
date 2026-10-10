@@ -22,7 +22,7 @@ export default function Footer() {
             <Link to="/" className="flex items-center gap-3">
               <LogoMark className="w-10 h-10" />
               <div>
-                <p className="font-display text-sm font-extrabold tracking-[0.3em] text-black">
+                <p className="font-brand text-sm font-extrabold tracking-[0.3em] text-black">
                   ZEV&nbsp;SHOP
                 </p>
                 <p className="font-tech text-[9px] tracking-[0.3em] text-black/40 mt-1">

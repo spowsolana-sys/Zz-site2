@@ -72,6 +72,13 @@ export default function ProductCard({ product, group, feature = false }) {
       ? `${active.index}`
       : null;
 
+  // Nom du coloris : masquer les libellés génériques "Coloris 1/2/..." qui
+  // n'apportent aucune information utile. Signalé à l'utilisateur pour qu'il
+  // puisse fournir les vrais noms de coloris.
+  const colorRaw = active.selectedOptions?.Color || "";
+  const isGenericColor = /^\s*coloris\s*\d+\s*$/i.test(colorRaw);
+  const colorLabel = isGenericColor ? null : colorRaw;
+
   return (
     <Link
       to={`/produit/${active.id}`}
@@ -83,14 +90,15 @@ export default function ProductCard({ product, group, feature = false }) {
         onClick={onWish}
         data-testid={`wishlist-heart-${active.id}`}
         aria-label="Ajouter à la wishlist"
-        className="absolute top-2.5 right-2.5 sm:top-3 sm:right-3 z-10 flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/90 border border-black/10 hover:border-black/40 transition-all duration-300 cursor-pointer"
+        className="absolute top-2.5 right-2.5 sm:top-3 sm:right-3 z-10 flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/70 backdrop-blur-sm border border-black/5 hover:border-black/25 hover:bg-white/90 transition-all duration-300 cursor-pointer"
       >
-        <Heart className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-colors ${wished ? "fill-black text-black" : "text-black/50"}`} />
+        <Heart className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-colors ${wished ? "fill-black text-black" : "text-black/45"}`} strokeWidth={1.75} />
       </button>
 
-      {/* Zone image — fond gris très léger pour séparer visuellement les cartes
-          Sur mobile : aspect 4/3 + léger agrandissement interne (1.08) pour mettre
-          la chaussure davantage en avant. Desktop inchangé (3/2 et scale 1). */}
+      {/* Zone image — fond gris très léger pour séparer visuellement les cartes.
+          Shoe un peu plus grand sur mobile (×1.20) et desktop (×1.05) pour mieux
+          mettre en valeur le produit sans jamais couper (overflow-hidden absorbe
+          la marge transparente des PNG). */}
       <div
         className={`relative flex items-center justify-center overflow-hidden bg-[#F5F5F5] ${
           feature ? "aspect-[16/9]" : "aspect-[4/3] sm:aspect-[3/2]"
@@ -105,7 +113,7 @@ export default function ProductCard({ product, group, feature = false }) {
         />
         {/* présentation premium 2.5D : lévitation idle subtile + inclinaison curseur */}
         <div
-          className="relative w-full h-full scale-[1.15] sm:scale-100"
+          className="relative w-full h-full scale-[1.20] sm:scale-[1.05]"
           {...tilt.bind}
           style={{ perspective: 900 }}
         >
@@ -167,35 +175,39 @@ export default function ProductCard({ product, group, feature = false }) {
           </ShoeFloat>
         </div>
         {indexLabel && (
-          <span className="absolute top-2 left-2 sm:top-4 sm:left-5 font-tech text-[8px] sm:text-[10px] tracking-[0.25em] sm:tracking-[0.35em] text-black/35">
+          <span className="absolute top-2 left-2 sm:top-4 sm:left-5 font-tech text-[9px] sm:text-[10px] font-medium tracking-[0.12em] sm:tracking-[0.18em] text-black/35">
             {indexLabel}
           </span>
         )}
-        <span className="hidden sm:flex absolute top-4 right-5 items-center gap-1.5 font-tech text-[10px] tracking-[0.35em] text-black/70 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-500">
+        <span className="hidden sm:flex absolute top-4 right-5 items-center gap-1.5 font-tech text-[10px] font-semibold tracking-[0.2em] text-black/70 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-500">
           VOIR
           <ArrowRight className="w-3.5 h-3.5" />
         </span>
       </div>
 
       <div className="px-2.5 py-2.5 sm:px-5 sm:py-4 border-t border-black/10">
-        <h3 className="font-display text-[12px] sm:text-base font-bold text-black leading-[1.2] sm:leading-snug line-clamp-2 sm:line-clamp-none sm:truncate">
+        <h3 className="font-tech text-[12.5px] sm:text-[15px] font-extrabold text-black leading-[1.15] sm:leading-tight line-clamp-2 sm:line-clamp-none sm:truncate tracking-[-0.01em]">
           {active.productTitle}
         </h3>
         <div className="flex items-center justify-between gap-1.5 sm:gap-2 mt-1 sm:mt-1.5">
-          <p className="font-tech text-[10px] sm:text-[10px] tracking-[0.15em] sm:tracking-[0.25em] text-black/45 uppercase truncate">
-            {active.selectedOptions.Color}
-          </p>
+          {colorLabel ? (
+            <p className="font-tech text-[10px] sm:text-[11px] font-medium tracking-[0.02em] text-black/50 uppercase truncate">
+              {colorLabel}
+            </p>
+          ) : (
+            <span aria-hidden="true" />
+          )}
           <p
-            className="font-tech text-[10px] sm:text-[11px] tracking-[0.1em] sm:tracking-[0.2em] text-black/55 shrink-0"
+            className="font-tech text-[11px] sm:text-[12px] font-semibold tracking-[0.02em] text-black shrink-0"
             data-testid={`product-card-price-${active.id}`}
           >
             {priceLabel(active)}
           </p>
         </div>
 
-        {/* Pastilles de coloris — affichées uniquement si plusieurs variantes
-            Mobile : point visible ~11 px dans une zone tactile ~44 px (padding).
-            Desktop : inchangé (24 px). */}
+        {/* Pastilles de coloris — plates (couleur fidèle, sans brillance),
+            bordure fine. Mobile : point visible ~11 px dans une zone tactile
+            ~44 px (padding). Desktop : 24 px. */}
         {multi && (
           <div
             className="flex items-center gap-0.5 sm:gap-2.5 mt-1.5 sm:mt-3.5 flex-wrap -ml-2 sm:ml-0"
@@ -203,6 +215,7 @@ export default function ProductCard({ product, group, feature = false }) {
           >
             {variants.map((v) => {
               const isActive = v.id === active.id;
+              const dotColor = v.swatchFlat || v.swatch;
               return (
                 <button
                   key={v.id}
@@ -218,10 +231,10 @@ export default function ProductCard({ product, group, feature = false }) {
                     aria-hidden="true"
                     className="block w-[11px] h-[11px] sm:w-full sm:h-full rounded-full"
                     style={{
-                      background: v.swatch,
+                      background: dotColor,
                       boxShadow: isActive
                         ? "0 0 0 1px #fff, 0 0 0 1.5px #0A0A0A"
-                        : "inset 0 0 0 1px rgba(0,0,0,0.12)",
+                        : "inset 0 0 0 1px rgba(0,0,0,0.18)",
                     }}
                   />
                 </button>
