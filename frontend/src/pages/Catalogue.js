@@ -13,16 +13,6 @@ const PILL_IDLE =
   "bg-[#F3F4F6] text-black/60 hover:bg-[#E5E7EB] hover:text-black";
 const PILL_ACTIVE = "bg-black text-white";
 
-const TABS = [
-  { id: "tous", label: "TOUS LES PRODUITS" },
-  { id: "nouveautes", label: "NOUVEAUTÉS" },
-  { id: "meilleures", label: "MEILLEURES VENTES" },
-  { id: "promotions", label: "PROMOTIONS" },
-  { id: "chaussures", label: "CHAUSSURES" },
-  { id: "vetements", label: "VÊTEMENTS" },
-  { id: "accessoires", label: "ACCESSOIRES" },
-];
-
 const SORTS = [
   { id: "pertinence", label: "Pertinence" },
   { id: "nouveautes", label: "Nouveautés" },
@@ -31,15 +21,7 @@ const SORTS = [
   { id: "ventes", label: "Meilleures ventes" },
 ];
 
-const EMPTY_NOTE = {
-  meilleures: "Les meilleures ventes s'afficheront automatiquement dès que les données de ventes seront disponibles.",
-  promotions: "Aucune promotion en cours. Les promotions s'afficheront ici automatiquement.",
-  vetements: "Les vêtements arriveront bientôt. Cette catégorie est prête à recevoir les futurs produits.",
-  accessoires: "Les accessoires arriveront bientôt. Cette catégorie est prête à recevoir les futurs produits.",
-};
-
 export default function Catalogue() {
-  const [tab, setTab] = useState("tous");
   const [fBrands, setFBrands] = useState([]); // tableau extensible : plusieurs marques possibles
   const [fSize, setFSize] = useState(null);
   const [fAvail, setFAvail] = useState(false);
@@ -54,13 +36,6 @@ export default function Catalogue() {
   // une variante satisfait les filtres actifs.
   const groups = useMemo(() => {
     let list = [...GROUPED_PRODUCTS];
-    if (tab !== "tous" && tab !== "nouveautes") {
-      if (tab === "chaussures") {
-        list = list.filter((g) => g.productType === "SNEAKERS");
-      } else if (["meilleures", "promotions", "vetements", "accessoires"].includes(tab)) {
-        list = [];
-      }
-    }
     if (fBrands.length > 0) {
       list = list.filter((g) => g.brand && fBrands.includes(g.brand));
     }
@@ -78,7 +53,7 @@ export default function Catalogue() {
       list = list;
     }
     return list;
-  }, [tab, fBrands, fSize, fAvail, sort]);
+  }, [fBrands, fSize, fAvail, sort]);
 
   const priceSortInactive = sort === "prix-asc" || sort === "prix-desc" || sort === "ventes";
   const totalCount = groups.length;
@@ -99,32 +74,15 @@ export default function Catalogue() {
           initial={{ opacity: 0, y: 22 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.1, ease: EASE }}
-          className="font-display font-extrabold uppercase text-4xl sm:text-6xl mt-4 text-black leading-none"
+          className="font-display font-extrabold uppercase text-3xl sm:text-5xl lg:text-6xl mt-4 text-black leading-none"
           data-testid="catalogue-title"
         >
-          CATALOGUE
+          NOTRE&nbsp;SÉLECTION
         </motion.h1>
       </header>
 
-      {/* onglets collections — pills gris perle, sélection noire */}
-      <div className="flex flex-wrap justify-center gap-2 sm:gap-2.5 mt-10">
-        {TABS.map((t) => (
-          <button
-            key={t.id}
-            type="button"
-            onClick={() => setTab(t.id)}
-            data-testid={`catalogue-tab-${t.id}`}
-            className={`${PILL_BASE} text-[10px] px-4 py-2 sm:px-5 sm:py-2.5 ${
-              tab === t.id ? PILL_ACTIVE : PILL_IDLE
-            }`}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
-
       {/* barre filtres + tri */}
-      <div className="flex items-center justify-between gap-4 mt-10 border-y border-black/10 py-4">
+      <div className="flex items-center justify-between gap-4 mt-12 sm:mt-16 border-y border-black/10 py-4">
         <button
           type="button"
           onClick={() => setShowFilters((s) => !s)}
@@ -185,9 +143,6 @@ export default function Catalogue() {
                 );
               })}
             </div>
-            <p className="font-tech text-[9px] tracking-[0.2em] text-black/30 mt-3 leading-relaxed">
-              D&apos;autres marques s&apos;ajouteront automatiquement avec les nouveaux produits.
-            </p>
           </div>
           <div>
             <p className="font-tech text-[9px] tracking-[0.35em] text-black/40 mb-3">TAILLE</p>
@@ -254,14 +209,14 @@ export default function Catalogue() {
       {groups.length === 0 && (
         <div className="mt-16 border border-dashed border-black/15 rounded-3xl py-20 px-8 text-center" data-testid="catalogue-empty">
           <p className="font-tech text-[11px] tracking-[0.25em] text-black/45">
-            {EMPTY_NOTE[tab] || "Aucun produit dans cette sélection pour le moment."}
+            Aucun produit ne correspond aux filtres actuellement sélectionnés.
           </p>
           <button
             type="button"
-            onClick={() => { setTab("tous"); setFBrands([]); setFSize(null); setFAvail(false); }}
+            onClick={() => { setFBrands([]); setFSize(null); setFAvail(false); }}
             className="mt-8 font-tech text-[10px] tracking-[0.3em] text-black border-b border-black pb-1 hover:opacity-60 transition-opacity cursor-pointer"
           >
-            VOIR&nbsp;TOUS&nbsp;LES&nbsp;PRODUITS
+            RÉINITIALISER&nbsp;LES&nbsp;FILTRES
           </button>
         </div>
       )}

@@ -1,24 +1,101 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { X, ImageOff } from "lucide-react";
+import { X, ImageOff, ZoomIn } from "lucide-react";
 
 const EASE = [0.16, 1, 0.3, 1];
 
+/**
+ * ProductGallery — galerie plein écran avec zoom sur ordinateur uniquement.
+ * Détection : `matchMedia("(hover: hover) and (pointer: fine)")` → vrai
+ * uniquement pour les périphériques avec vraie souris. Sur mobile et tablette
+ * tactile, le zoom est désactivé pour préserver le défilement natif.
+ *
+ * Interaction desktop :
+ *   • Clic sur l'image principale → entrée en mode zoom (×2) centré sur le
+ *     point cliqué.
+ *   • Déplacement de la souris → l'image s'ajuste pour montrer la zone survolée
+ *     (via transform-origin). Transition fluide.
+ *   • Clic à nouveau, touche Échap ou bouton Fermer → sortie du zoom.
+ *   • Curseur `zoom-in` / `zoom-out` selon l'état.
+ */
 export default function ProductGallery({ open, onClose, variant }) {
   const [sel, setSel] = useState(0);
+  const [canZoom, setCanZoom] = useState(false);
+  const [zoomed, setZoomed] = useState(false);
+  const [origin, setOrigin] = useState({ x: 50, y: 50 }); // en pourcentage
+  const imgWrapRef = useRef(null);
 
+  // Détection ordinateur (souris + survol fin) — exécutée côté client.
   useEffect(() => {
-    if (open) setSel(0);
+    if (typeof window === "undefined" || !window.matchMedia) return;
+    const mq = window.matchMedia("(hover: hover) and (pointer: fine)");
+    const update = () => setCanZoom(mq.matches);
+    update();
+    if (mq.addEventListener) mq.addEventListener("change", update);
+    else mq.addListener(update);
+    return () => {
+      if (mq.removeEventListener) mq.removeEventListener("change", update);
+      else mq.removeListener(update);
+    };
+  }, []);
+
+  // Reset miniature + zoom à l'ouverture ou au changement de variante.
+  useEffect(() => {
+    if (open) {
+      setSel(0);
+      setZoomed(false);
+    }
   }, [open, variant.id]);
 
+  // Reset zoom quand on change de miniature.
+  useEffect(() => {
+    setZoomed(false);
+  }, [sel]);
+
+  // Fermeture via Échap ; sortie du zoom aussi via Échap.
   useEffect(() => {
     if (!open) return;
-    const onKey = (e) => e.key === "Escape" && onClose();
+    const onKey = (e) => {
+      if (e.key === "Escape") {
+        if (zoomed) setZoomed(false);
+        else onClose();
+      }
+    };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [open, onClose]);
+  }, [open, onClose, zoomed]);
 
   const current = variant.gallery[sel];
+
+  const onImageMouseMove = (e) => {
+    if (!canZoom || !zoomed || !imgWrapRef.current) return;
+    const rect = imgWrapRef.current.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    setOrigin({
+      x: Math.max(0, Math.min(100, x)),
+      y: Math.max(0, Math.min(100, y)),
+    });
+  };
+
+  const onImageClick = (e) => {
+    if (!canZoom || !current.src) return;
+    // Point de clic → point focal du zoom.
+    if (imgWrapRef.current) {
+      const rect = imgWrapRef.current.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width) * 100;
+      const y = ((e.clientY - rect.top) / rect.height) * 100;
+      setOrigin({
+        x: Math.max(0, Math.min(100, x)),
+        y: Math.max(0, Math.min(100, y)),
+      });
+    }
+    setZoomed((z) => !z);
+  };
+
+  const onImageLeave = () => {
+    if (zoomed) setZoomed(false);
+  };
 
   return (
     <AnimatePresence>
@@ -35,15 +112,26 @@ export default function ProductGallery({ open, onClose, variant }) {
             <p className="font-tech text-[11px] tracking-[0.35em] text-black/70">
               GALERIE&nbsp;—&nbsp;{variant.name}
             </p>
-            <button
-              type="button"
-              onClick={onClose}
-              data-testid="gallery-close-button"
-              aria-label="Fermer la galerie"
-              className="flex items-center justify-center w-11 h-11 rounded-full border border-black/15 text-black/70 hover:border-black transition-colors cursor-pointer"
-            >
-              <X className="w-5 h-5" />
-            </button>
+            <div className="flex items-center gap-3">
+              {canZoom && current.src && (
+                <span
+                  className="hidden sm:flex items-center gap-1.5 font-tech text-[9px] tracking-[0.3em] text-black/40"
+                  data-testid="gallery-zoom-hint"
+                >
+                  <ZoomIn className="w-3.5 h-3.5" />
+                  CLIC&nbsp;POUR&nbsp;{zoomed ? "DÉZOOMER" : "ZOOMER"}
+                </span>
+              )}
+              <button
+                type="button"
+                onClick={onClose}
+                data-testid="gallery-close-button"
+                aria-label="Fermer la galerie"
+                className="flex items-center justify-center w-11 h-11 rounded-full border border-black/15 text-black/70 hover:border-black transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
           </div>
 
           <div className="flex-1 flex items-center justify-center px-6 overflow-hidden">
@@ -57,14 +145,35 @@ export default function ProductGallery({ open, onClose, variant }) {
                 transition={{ duration: 0.3, ease: EASE }}
               >
                 {current.src ? (
-                  <img
-                    src={current.src}
-                    alt={`${variant.name} — ${current.label}`}
-                    draggable="false"
-                    className="max-h-[58vh] w-auto max-w-full object-contain select-none"
-                    style={{ filter: "drop-shadow(0 30px 30px rgba(0,0,0,0.18))" }}
-                    data-testid="gallery-main-view"
-                  />
+                  <div
+                    ref={imgWrapRef}
+                    onClick={onImageClick}
+                    onMouseMove={onImageMouseMove}
+                    onMouseLeave={onImageLeave}
+                    className="relative flex items-center justify-center w-full max-h-[62vh] overflow-hidden select-none"
+                    style={{
+                      cursor: canZoom
+                        ? zoomed
+                          ? "zoom-out"
+                          : "zoom-in"
+                        : "default",
+                    }}
+                    data-testid="gallery-main-wrap"
+                  >
+                    <img
+                      src={current.src}
+                      alt={`${variant.name} — ${current.label}`}
+                      draggable="false"
+                      className="max-h-[58vh] w-auto max-w-full object-contain select-none transition-transform duration-200 ease-out will-change-transform"
+                      style={{
+                        filter: "drop-shadow(0 30px 30px rgba(0,0,0,0.18))",
+                        transform: zoomed ? "scale(2)" : "scale(1)",
+                        transformOrigin: `${origin.x}% ${origin.y}%`,
+                      }}
+                      data-testid="gallery-main-view"
+                      data-zoomed={zoomed ? "1" : "0"}
+                    />
+                  </div>
                 ) : (
                   <div
                     className="flex flex-col items-center justify-center gap-4 w-full max-w-2xl aspect-[16/9] border border-dashed border-black/15 rounded-3xl text-center px-6"
