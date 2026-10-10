@@ -42,6 +42,7 @@ export const CATALOG = [
     handle: "asics-gel-nyc",
     title: "ASICS GEL-NYC",
     vendor: "ZEV SHOP",
+    brand: "ASICS",
     productType: "SNEAKERS",
     description: "ASICS GEL-NYC — sneaker ZEV SHOP, trois coloris.",
     availableForSale: true,
@@ -109,6 +110,7 @@ export const CATALOG = [
     handle: "tn-sneaker",
     title: "TN",
     vendor: "ZEV SHOP",
+    brand: "Nike",
     productType: "SNEAKERS",
     description: "TN — sneaker ZEV SHOP, quatre coloris.",
     availableForSale: true,
@@ -241,10 +243,17 @@ export const GROUPED_PRODUCTS = CATALOG.map((prod) => {
     productTitle: prod.title,
     productType: prod.productType,
     vendor: prod.vendor,
+    brand: prod.brand || null,
     variants,
     variantCount: variants.length,
   };
 });
+
+/* Marques disponibles — construit depuis CATALOG. Extensible : il suffit
+   d'ajouter `brand: "..."` à une nouvelle entrée du catalogue. */
+export const BRANDS = Array.from(
+  new Set(CATALOG.map((p) => p.brand).filter(Boolean)),
+).sort();
 
 /*
  * Helper : retourne le groupe contenant une variante donnée, ou null.

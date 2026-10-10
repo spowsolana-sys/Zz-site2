@@ -42,17 +42,19 @@ function Dropdown({ label, items, light = false }) {
         <ChevronDown className="w-3.5 h-3.5 transition-transform duration-200 group-hover:rotate-180" />
       </button>
       <div className="absolute left-1/2 -translate-x-1/2 top-full pt-2 opacity-0 invisible translate-y-1 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-200 z-50">
-        <div className="bg-white border border-black/10 shadow-[0_24px_48px_rgba(0,0,0,0.08)] py-3 min-w-[210px]">
-          {items.map((item) => (
-            <Link
-              key={item.slug}
-              to={`/categorie/${item.slug}`}
-              data-testid={`nav-sub-${item.slug}`}
-              className="block px-6 py-2.5 font-tech text-[11px] tracking-[0.2em] text-black/55 hover:text-black hover:bg-black/[0.03] transition-colors duration-150"
-            >
-              {item.label}
-            </Link>
-          ))}
+        <div className="bg-white border border-black/10 shadow-[0_24px_48px_rgba(0,0,0,0.08)] p-3 min-w-[230px] rounded-2xl">
+          <div className="flex flex-col gap-1.5">
+            {items.map((item) => (
+              <Link
+                key={item.slug}
+                to={`/categorie/${item.slug}`}
+                data-testid={`nav-sub-${item.slug}`}
+                className="block px-4 py-2 rounded-full bg-[#F3F4F6] hover:bg-[#E5E7EB] font-tech text-[11px] tracking-[0.2em] text-black/65 hover:text-black transition-colors duration-150"
+              >
+                {item.label}
+              </Link>
+            ))}
+          </div>
         </div>
       </div>
     </div>
@@ -393,13 +395,13 @@ export default function Header() {
                 <p className="font-tech text-[10px] tracking-[0.35em] text-black/40 mb-3">
                   VÊTEMENTS
                 </p>
-                <div className="grid grid-cols-2 gap-x-6 gap-y-2">
+                <div className="flex flex-wrap gap-2">
                   {VETEMENTS.map((i) => (
                     <Link
                       key={i.slug}
                       to={`/categorie/${i.slug}`}
                       onClick={() => setMenuOpen(false)}
-                      className="font-tech text-[12px] text-black/60"
+                      className="inline-flex items-center px-4 py-2 rounded-full bg-[#F3F4F6] hover:bg-[#E5E7EB] active:bg-black active:text-white font-tech text-[11px] tracking-[0.15em] text-black/65 transition-colors"
                     >
                       {i.label}
                     </Link>
@@ -410,13 +412,13 @@ export default function Header() {
                 <p className="font-tech text-[10px] tracking-[0.35em] text-black/40 mb-3">
                   ACCESSOIRES
                 </p>
-                <div className="grid grid-cols-2 gap-x-6 gap-y-2">
+                <div className="flex flex-wrap gap-2">
                   {ACCESSOIRES.map((i) => (
                     <Link
                       key={i.slug}
                       to={`/categorie/${i.slug}`}
                       onClick={() => setMenuOpen(false)}
-                      className="font-tech text-[12px] text-black/60"
+                      className="inline-flex items-center px-4 py-2 rounded-full bg-[#F3F4F6] hover:bg-[#E5E7EB] active:bg-black active:text-white font-tech text-[11px] tracking-[0.15em] text-black/65 transition-colors"
                     >
                       {i.label}
                     </Link>

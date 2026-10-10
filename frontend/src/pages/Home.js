@@ -428,7 +428,10 @@ function Newsletter() {
 }
 
 export default function Home() {
-  const bestsellers = PRODUCTS.filter((p) => p.badge === "bestseller");
+  // Placeholder temporaire : en attendant les données de ventes réelles,
+  // la section Meilleures ventes affiche les modèles groupés actuels.
+  // Dès que l'historique de commandes sera disponible, on remplacera
+  // `GROUPED_PRODUCTS` par un classement calculé côté API.
   const recommended = PRODUCTS.filter((p) => p.badge === "recommended");
 
   return (
@@ -437,18 +440,11 @@ export default function Home() {
       <Hero />
       <Marquee />
       <ProductSection
-        testid="nouveautes-section"
-        eyebrow="DERNIERS PRODUITS"
-        title="Nouveautés"
-        items={GROUPED_PRODUCTS}
-        emptyNote="Les nouveautés s'afficheront automatiquement."
-      />
-      <ProductSection
         testid="bestsellers-section"
         eyebrow="LES PLUS DEMANDÉS"
         title="Meilleures ventes"
-        items={bestsellers}
-        emptyNote="Cette sélection s'affichera automatiquement dès que les données de ventes seront disponibles."
+        items={GROUPED_PRODUCTS}
+        emptyNote="Les meilleures ventes s'afficheront automatiquement dès que les données seront disponibles."
       />
       <ProductSection
         testid="recommendations-section"

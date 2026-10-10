@@ -105,7 +105,7 @@ export default function ProductCard({ product, group, feature = false }) {
         />
         {/* présentation premium 2.5D : lévitation idle subtile + inclinaison curseur */}
         <div
-          className="relative w-full h-full scale-[1.08] sm:scale-100"
+          className="relative w-full h-full scale-[1.15] sm:scale-100"
           {...tilt.bind}
           style={{ perspective: 900 }}
         >
@@ -177,16 +177,16 @@ export default function ProductCard({ product, group, feature = false }) {
         </span>
       </div>
 
-      <div className="px-2 py-2 sm:px-5 sm:py-4 border-t border-black/10">
-        <h3 className="font-display text-[11px] sm:text-base font-bold text-black leading-[1.2] sm:leading-snug line-clamp-2 sm:line-clamp-none sm:truncate">
+      <div className="px-2.5 py-2.5 sm:px-5 sm:py-4 border-t border-black/10">
+        <h3 className="font-display text-[12px] sm:text-base font-bold text-black leading-[1.2] sm:leading-snug line-clamp-2 sm:line-clamp-none sm:truncate">
           {active.productTitle}
         </h3>
-        <div className="flex items-center justify-between gap-1.5 sm:gap-2 mt-0.5 sm:mt-1.5">
-          <p className="font-tech text-[9px] sm:text-[10px] tracking-[0.15em] sm:tracking-[0.25em] text-black/45 uppercase truncate">
+        <div className="flex items-center justify-between gap-1.5 sm:gap-2 mt-1 sm:mt-1.5">
+          <p className="font-tech text-[10px] sm:text-[10px] tracking-[0.15em] sm:tracking-[0.25em] text-black/45 uppercase truncate">
             {active.selectedOptions.Color}
           </p>
           <p
-            className="font-tech text-[9px] sm:text-[11px] tracking-[0.1em] sm:tracking-[0.2em] text-black/55 shrink-0"
+            className="font-tech text-[10px] sm:text-[11px] tracking-[0.1em] sm:tracking-[0.2em] text-black/55 shrink-0"
             data-testid={`product-card-price-${active.id}`}
           >
             {priceLabel(active)}
@@ -194,11 +194,11 @@ export default function ProductCard({ product, group, feature = false }) {
         </div>
 
         {/* Pastilles de coloris — affichées uniquement si plusieurs variantes
-            Mobile : point visible ~10 px dans une zone tactile ~42 px (padding).
+            Mobile : point visible ~11 px dans une zone tactile ~44 px (padding).
             Desktop : inchangé (24 px). */}
         {multi && (
           <div
-            className="flex items-center gap-0.5 sm:gap-2.5 mt-1 sm:mt-3.5 flex-wrap -ml-2 sm:ml-0"
+            className="flex items-center gap-0.5 sm:gap-2.5 mt-1.5 sm:mt-3.5 flex-wrap -ml-2 sm:ml-0"
             data-testid={`product-card-swatches-${active.productHandle}`}
           >
             {variants.map((v) => {
@@ -216,7 +216,7 @@ export default function ProductCard({ product, group, feature = false }) {
                 >
                   <span
                     aria-hidden="true"
-                    className="block w-2.5 h-2.5 sm:w-full sm:h-full rounded-full"
+                    className="block w-[11px] h-[11px] sm:w-full sm:h-full rounded-full"
                     style={{
                       background: v.swatch,
                       boxShadow: isActive

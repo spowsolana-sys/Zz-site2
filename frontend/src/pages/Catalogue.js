@@ -2,9 +2,16 @@ import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { SlidersHorizontal } from "lucide-react";
 import ProductCard from "@/components/ProductCard";
-import { GROUPED_PRODUCTS, PRODUCTS, SIZES } from "@/data/products";
+import { GROUPED_PRODUCTS, BRANDS, SIZES } from "@/data/products";
 
 const EASE = [0.16, 1, 0.3, 1];
+
+/* Styles pills unifiés — fond gris perle #F3F4F6, sélection noire. */
+const PILL_BASE =
+  "inline-flex items-center justify-center font-tech tracking-[0.2em] rounded-full transition-colors duration-200 cursor-pointer select-none";
+const PILL_IDLE =
+  "bg-[#F3F4F6] text-black/60 hover:bg-[#E5E7EB] hover:text-black";
+const PILL_ACTIVE = "bg-black text-white";
 
 const TABS = [
   { id: "tous", label: "TOUS LES PRODUITS" },
@@ -33,17 +40,18 @@ const EMPTY_NOTE = {
 
 export default function Catalogue() {
   const [tab, setTab] = useState("tous");
-  const [fColor, setFColor] = useState(null);
+  const [fBrands, setFBrands] = useState([]); // tableau extensible : plusieurs marques possibles
   const [fSize, setFSize] = useState(null);
   const [fAvail, setFAvail] = useState(false);
   const [sort, setSort] = useState("pertinence");
   const [showFilters, setShowFilters] = useState(false);
 
+  const toggleBrand = (brand) =>
+    setFBrands((bs) => (bs.includes(brand) ? bs.filter((b) => b !== brand) : [...bs, brand]));
+
   // Grouped products — chaque entrée = un modèle avec toutes ses variantes de coloris.
   // Le filtrage s'applique au niveau du groupe : on garde un groupe si au moins
-  // une variante satisfait les filtres actifs ; le groupe est alors enrichi d'une
-  // propriété `_initialVariantId` (future amélioration) — pour l'instant la carte
-  // sélectionne automatiquement la première variante disponible.
+  // une variante satisfait les filtres actifs.
   const groups = useMemo(() => {
     let list = [...GROUPED_PRODUCTS];
     if (tab !== "tous" && tab !== "nouveautes") {
@@ -53,13 +61,8 @@ export default function Catalogue() {
         list = [];
       }
     }
-    if (fColor) {
-      list = list
-        .map((g) => {
-          const matches = g.variants.filter((v) => v.selectedOptions.Color === fColor);
-          return matches.length ? { ...g, variants: matches } : null;
-        })
-        .filter(Boolean);
+    if (fBrands.length > 0) {
+      list = list.filter((g) => g.brand && fBrands.includes(g.brand));
     }
     if (fAvail) {
       list = list
@@ -75,10 +78,11 @@ export default function Catalogue() {
       list = list;
     }
     return list;
-  }, [tab, fColor, fSize, fAvail, sort]);
+  }, [tab, fBrands, fSize, fAvail, sort]);
 
   const priceSortInactive = sort === "prix-asc" || sort === "prix-desc" || sort === "ventes";
   const totalCount = groups.length;
+  const activeFilterCount = fBrands.length + (fSize ? 1 : 0) + (fAvail ? 1 : 0);
 
   return (
     <div className="min-h-screen pt-40 pb-24 px-6 sm:px-10 max-w-[1400px] mx-auto">
@@ -102,18 +106,16 @@ export default function Catalogue() {
         </motion.h1>
       </header>
 
-      {/* onglets collections */}
-      <div className="flex flex-wrap justify-center gap-x-6 gap-y-3 mt-10">
+      {/* onglets collections — pills gris perle, sélection noire */}
+      <div className="flex flex-wrap justify-center gap-2 sm:gap-2.5 mt-10">
         {TABS.map((t) => (
           <button
             key={t.id}
             type="button"
             onClick={() => setTab(t.id)}
             data-testid={`catalogue-tab-${t.id}`}
-            className={`font-tech text-[10px] tracking-[0.3em] pb-1 border-b transition-all duration-300 cursor-pointer ${
-              tab === t.id
-                ? "text-black border-black"
-                : "text-black/40 border-transparent hover:text-black/70"
+            className={`${PILL_BASE} text-[10px] px-4 py-2 sm:px-5 sm:py-2.5 ${
+              tab === t.id ? PILL_ACTIVE : PILL_IDLE
             }`}
           >
             {t.label}
@@ -131,7 +133,11 @@ export default function Catalogue() {
         >
           <SlidersHorizontal className="w-4 h-4" />
           FILTRES
-          {(fColor || fSize || fAvail) && <span className="w-1.5 h-1.5 rounded-full bg-black" />}
+          {activeFilterCount > 0 && (
+            <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1.5 rounded-full bg-black text-white text-[9px] tracking-normal">
+              {activeFilterCount}
+            </span>
+          )}
         </button>
         <div className="flex items-center gap-3">
           <span className="hidden sm:inline font-tech text-[9px] tracking-[0.3em] text-black/35">
@@ -141,7 +147,7 @@ export default function Catalogue() {
             value={sort}
             onChange={(e) => setSort(e.target.value)}
             data-testid="sort-select"
-            className="font-tech text-[10px] tracking-[0.2em] text-black/70 border border-black/15 rounded-full px-4 py-2 bg-white focus:outline-none focus:border-black cursor-pointer"
+            className="font-tech text-[10px] tracking-[0.2em] text-black/70 border border-transparent bg-[#F3F4F6] rounded-full px-4 py-2 hover:bg-[#E5E7EB] focus:outline-none focus:border-black cursor-pointer transition-colors"
           >
             {SORTS.map((s) => (
               <option key={s.id} value={s.id}>
@@ -157,35 +163,31 @@ export default function Catalogue() {
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, ease: EASE }}
-          className="grid sm:grid-cols-3 gap-8 mt-8 border border-black/10 rounded-3xl p-6"
+          className="grid sm:grid-cols-3 gap-8 mt-8 bg-[#FAFAFB] rounded-3xl p-6"
           data-testid="filters-panel"
         >
           <div>
-            <p className="font-tech text-[9px] tracking-[0.35em] text-black/40 mb-3">COULEUR</p>
-            <div className="flex items-center gap-2.5 flex-wrap">
-              <button
-                type="button"
-                onClick={() => setFColor(null)}
-                data-testid="filter-color-all"
-                className={`font-tech text-[10px] px-3 py-1.5 rounded-full border transition-colors cursor-pointer ${!fColor ? "border-black text-black" : "border-black/15 text-black/50"}`}
-              >
-                TOUTES
-              </button>
-              {PRODUCTS.map((p) => (
-                <button
-                  key={p.id}
-                  type="button"
-                  onClick={() => setFColor(p.selectedOptions.Color)}
-                  data-testid={`filter-color-${p.id}`}
-                  aria-label={`Couleur ${p.selectedOptions.Color}`}
-                  className="w-7 h-7 rounded-full transition-transform hover:scale-110 cursor-pointer"
-                  style={{
-                    background: p.swatch,
-                    boxShadow: fColor === p.selectedOptions.Color ? "0 0 0 2px #0A0A0A" : "0 0 0 1px rgba(0,0,0,0.15)",
-                  }}
-                />
-              ))}
+            <p className="font-tech text-[9px] tracking-[0.35em] text-black/40 mb-3">MARQUES</p>
+            <div className="flex items-center gap-2 flex-wrap">
+              {BRANDS.map((b) => {
+                const active = fBrands.includes(b);
+                return (
+                  <button
+                    key={b}
+                    type="button"
+                    onClick={() => toggleBrand(b)}
+                    data-testid={`filter-brand-${b.toLowerCase()}`}
+                    aria-pressed={active}
+                    className={`${PILL_BASE} text-[10px] px-4 py-1.5 ${active ? PILL_ACTIVE : PILL_IDLE}`}
+                  >
+                    {b}
+                  </button>
+                );
+              })}
             </div>
+            <p className="font-tech text-[9px] tracking-[0.2em] text-black/30 mt-3 leading-relaxed">
+              D&apos;autres marques s&apos;ajouteront automatiquement avec les nouveaux produits.
+            </p>
           </div>
           <div>
             <p className="font-tech text-[9px] tracking-[0.35em] text-black/40 mb-3">TAILLE</p>
@@ -194,7 +196,7 @@ export default function Catalogue() {
                 type="button"
                 onClick={() => setFSize(null)}
                 data-testid="filter-size-all"
-                className={`font-tech text-[10px] px-3 py-1.5 rounded-full border transition-colors cursor-pointer ${!fSize ? "border-black text-black" : "border-black/15 text-black/50"}`}
+                className={`${PILL_BASE} text-[10px] px-3 py-1.5 ${!fSize ? PILL_ACTIVE : PILL_IDLE}`}
               >
                 TOUTES
               </button>
@@ -204,7 +206,7 @@ export default function Catalogue() {
                   type="button"
                   onClick={() => setFSize(s)}
                   data-testid={`filter-size-${s}`}
-                  className={`font-tech text-[10px] w-9 h-8 rounded-lg border transition-colors cursor-pointer ${fSize === s ? "border-black text-black bg-black/[0.04]" : "border-black/15 text-black/50"}`}
+                  className={`${PILL_BASE} text-[10px] w-9 h-8 tracking-normal ${fSize === s ? PILL_ACTIVE : PILL_IDLE}`}
                 >
                   {s}
                 </button>
@@ -217,7 +219,8 @@ export default function Catalogue() {
               type="button"
               onClick={() => setFAvail((a) => !a)}
               data-testid="filter-availability"
-              className={`font-tech text-[10px] tracking-[0.2em] px-4 py-1.5 rounded-full border transition-colors cursor-pointer ${fAvail ? "border-black text-black bg-black/[0.04]" : "border-black/15 text-black/50"}`}
+              aria-pressed={fAvail}
+              className={`${PILL_BASE} text-[10px] px-4 py-1.5 ${fAvail ? PILL_ACTIVE : PILL_IDLE}`}
             >
               EN&nbsp;STOCK&nbsp;UNIQUEMENT
             </button>
@@ -255,7 +258,7 @@ export default function Catalogue() {
           </p>
           <button
             type="button"
-            onClick={() => { setTab("tous"); setFColor(null); setFSize(null); setFAvail(false); }}
+            onClick={() => { setTab("tous"); setFBrands([]); setFSize(null); setFAvail(false); }}
             className="mt-8 font-tech text-[10px] tracking-[0.3em] text-black border-b border-black pb-1 hover:opacity-60 transition-opacity cursor-pointer"
           >
             VOIR&nbsp;TOUS&nbsp;LES&nbsp;PRODUITS
