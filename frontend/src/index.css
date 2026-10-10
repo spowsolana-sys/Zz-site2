@@ -24,6 +24,12 @@
     --input: 0 0% 90%;
     --ring: 0 0% 9%;
     --radius: 0.5rem;
+
+    /* ZEV SHOP — accent grenat (couleur signature secondaire).
+       Inspirée du visuel d'accueil, utilisée avec parcimonie :
+       filtres actifs, indicateurs sélectionnés, survols discrets. */
+    --accent-garnet: 352 73% 32%;      /* #8E1721 */
+    --accent-garnet-dark: 352 73% 24%;  /* survols/press */
   }
 }
 

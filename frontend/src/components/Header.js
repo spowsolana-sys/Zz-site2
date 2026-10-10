@@ -35,7 +35,7 @@ function Dropdown({ label, items, light = false }) {
       <button
         type="button"
         className={`nav-underline flex items-center gap-1.5 font-tech text-[11px] tracking-[0.25em] transition-colors duration-200 py-2 cursor-pointer ${
-          light ? "text-white/75 group-hover:text-white" : "text-black/60 group-hover:text-black"
+          light ? "text-white/75 group-hover:text-white" : "text-black/60 group-hover:text-[#8E1721]"
         }`}
       >
         {label}
@@ -49,7 +49,7 @@ function Dropdown({ label, items, light = false }) {
                 key={item.slug}
                 to={`/categorie/${item.slug}`}
                 data-testid={`nav-sub-${item.slug}`}
-                className="block px-4 py-2 rounded-full bg-[#F3F4F6] hover:bg-[#E5E7EB] font-tech text-[11px] tracking-[0.2em] text-black/65 hover:text-black transition-colors duration-150"
+                className="block px-4 py-2 rounded-full bg-[#F3F4F6] hover:bg-[#8E1721] font-tech text-[11px] tracking-[0.2em] text-black/65 hover:text-white transition-colors duration-150"
               >
                 {item.label}
               </Link>
@@ -264,10 +264,10 @@ export default function Header() {
                 isActive
                   ? immersive
                     ? "text-white nav-underline-active"
-                    : "text-black nav-underline-active"
+                    : "text-[#8E1721] nav-underline-active"
                   : immersive
                     ? "text-white/75 hover:text-white"
-                    : "text-black/60 hover:text-black"
+                    : "text-black/60 hover:text-[#8E1721]"
               }`
             }
           >
@@ -344,7 +344,7 @@ export default function Header() {
                 animate={{ scale: 1 }}
                 transition={{ duration: 0.3, ease: EASE }}
                 data-testid="cart-count"
-                className="absolute -top-1.5 -right-1.5 flex items-center justify-center w-5 h-5 rounded-full bg-black text-white font-tech text-[10px] font-bold"
+                className="absolute -top-1.5 -right-1.5 flex items-center justify-center w-5 h-5 rounded-full bg-[#8E1721] text-white font-tech text-[10px] font-bold"
               >
                 {count}
               </motion.span>
@@ -401,7 +401,7 @@ export default function Header() {
                       key={i.slug}
                       to={`/categorie/${i.slug}`}
                       onClick={() => setMenuOpen(false)}
-                      className="inline-flex items-center px-4 py-2 rounded-full bg-[#F3F4F6] hover:bg-[#E5E7EB] active:bg-black active:text-white font-tech text-[11px] tracking-[0.15em] text-black/65 transition-colors"
+                      className="inline-flex items-center px-4 py-2 rounded-full bg-[#F3F4F6] hover:bg-[#E5E7EB] active:bg-[#8E1721] active:text-white font-tech text-[11px] tracking-[0.15em] text-black/65 transition-colors"
                     >
                       {i.label}
                     </Link>
@@ -418,7 +418,7 @@ export default function Header() {
                       key={i.slug}
                       to={`/categorie/${i.slug}`}
                       onClick={() => setMenuOpen(false)}
-                      className="inline-flex items-center px-4 py-2 rounded-full bg-[#F3F4F6] hover:bg-[#E5E7EB] active:bg-black active:text-white font-tech text-[11px] tracking-[0.15em] text-black/65 transition-colors"
+                      className="inline-flex items-center px-4 py-2 rounded-full bg-[#F3F4F6] hover:bg-[#E5E7EB] active:bg-[#8E1721] active:text-white font-tech text-[11px] tracking-[0.15em] text-black/65 transition-colors"
                     >
                       {i.label}
                     </Link>

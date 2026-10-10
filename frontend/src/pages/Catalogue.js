@@ -6,12 +6,13 @@ import { GROUPED_PRODUCTS, BRANDS, SIZES } from "@/data/products";
 
 const EASE = [0.16, 1, 0.3, 1];
 
-/* Styles pills unifiés — fond gris perle #F3F4F6, sélection noire. */
+/* Styles pills unifiés — fond gris perle #F3F4F6 (idle), rouge grenat
+   #8E1721 pour les filtres actifs (couleur d'accent ZEV SHOP). */
 const PILL_BASE =
   "inline-flex items-center justify-center font-tech font-semibold tracking-[0.1em] rounded-full transition-colors duration-200 cursor-pointer select-none";
 const PILL_IDLE =
   "bg-[#F3F4F6] text-black/60 hover:bg-[#E5E7EB] hover:text-black";
-const PILL_ACTIVE = "bg-black text-white";
+const PILL_ACTIVE = "bg-[#8E1721] text-white hover:bg-[#761019]";
 
 const SORTS = [
   { id: "pertinence", label: "Pertinence" },
@@ -95,7 +96,7 @@ export default function Catalogue() {
           FILTRES
           {activeFilterCount > 0 && (
             <span
-              className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1.5 rounded-full bg-black text-white text-[9px] font-bold tracking-normal"
+              className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1.5 rounded-full bg-[#8E1721] text-white text-[9px] font-bold tracking-normal"
               data-testid="filters-active-count"
             >
               {activeFilterCount}
@@ -219,7 +220,7 @@ export default function Catalogue() {
           <button
             type="button"
             onClick={() => { setFBrands([]); setFSize(null); setFAvail(false); }}
-            className="mt-8 font-tech text-[10px] tracking-[0.3em] text-black border-b border-black pb-1 hover:opacity-60 transition-opacity cursor-pointer"
+            className="mt-8 font-tech text-[10px] font-semibold tracking-[0.2em] text-[#8E1721] border-b border-[#8E1721] pb-1 hover:opacity-70 transition-opacity cursor-pointer"
           >
             RÉINITIALISER&nbsp;LES&nbsp;FILTRES
           </button>
