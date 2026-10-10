@@ -207,6 +207,52 @@ export const PRODUCTS = CATALOG.flatMap((prod) =>
 ).map((v, i) => ({ ...v, index: String(i + 1).padStart(2, "0") }));
 export const PRODUCT_COUNT = PRODUCTS.length;
 
+/*
+ * GROUPED_PRODUCTS — liste groupée par modèle (vendor + handle) pour les
+ * grilles du catalogue. Chaque entrée expose son tableau `variants` prêt pour
+ * la sélection de coloris directement depuis la carte. Dérivé de CATALOG
+ * (source unique de vérité) — aucun produit n'est perdu, le regroupement
+ * s'effectue uniquement au niveau de l'affichage. `siblings` est également
+ * ajouté à chaque variante pour qu'une variante seule puisse retrouver ses
+ * cousins (utilisé par la page produit).
+ */
+export const GROUPED_PRODUCTS = CATALOG.map((prod) => {
+  const variants = prod.variants.map((v) => {
+    const flat = PRODUCTS.find((p) => p.id === v.id);
+    return {
+      ...v,
+      productHandle: prod.handle,
+      productTitle: prod.title,
+      productType: prod.productType,
+      vendor: prod.vendor,
+      name: v.title,
+      index: flat ? flat.index : "01",
+      // index local au groupe (01/03 pour ASICS, 01/04 pour TN)
+      groupIndex: String(prod.variants.indexOf(v) + 1).padStart(2, "0"),
+      groupCount: String(prod.variants.length).padStart(2, "0"),
+    };
+  });
+  // enrichissement croisé : chaque variante connait ses cousins
+  variants.forEach((v) => {
+    v.siblings = variants;
+  });
+  return {
+    handle: prod.handle,
+    productTitle: prod.title,
+    productType: prod.productType,
+    vendor: prod.vendor,
+    variants,
+    variantCount: variants.length,
+  };
+});
+
+/*
+ * Helper : retourne le groupe contenant une variante donnée, ou null.
+ */
+export function findGroup(variantId) {
+  return GROUPED_PRODUCTS.find((g) => g.variants.some((v) => v.id === variantId)) || null;
+}
+
 export const SIZES = ["40", "41", "42", "43", "44", "45", "46"];
 
 /*

@@ -1,17 +1,51 @@
+import { useMemo, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Heart } from "lucide-react";
-import { motion, useTransform } from "framer-motion";
-import { priceLabel, PRODUCT_COUNT } from "@/data/products";
+import { AnimatePresence, motion, useTransform } from "framer-motion";
+import { priceLabel } from "@/data/products";
 import { useShoeTilt, ShoeFloat, ShoeTiltLayer } from "./ShoeMotion";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 
-export default function ProductCard({ product: p, feature = false }) {
+/* Même courbe que le ProductStage immersif pour une cohérence totale
+   avec l'animation de transition entre coloris existante sur la fiche produit. */
+const EASE = [0.65, 0, 0.35, 1];
+
+/*
+ * ProductCard — accepte deux modes :
+ *   - group={groupObj}    : nouveau mode groupé (plusieurs variantes de coloris)
+ *   - product={variantObj}: mode legacy (variante unique — utilisé par la wishlist)
+ * En mode groupé : la carte affiche des pastilles de coloris sous l'image.
+ * L'image bascule entre coloris via un carrousel vertical identique au ProductStage
+ * (y: -135% → 0 → +135% sur 800 ms, cubic-bezier(0.65,0,0.35,1)).
+ * Fond de l'image = gris très léger (#F5F5F5) pour mieux détacher les cartes.
+ */
+export default function ProductCard({ product, group, feature = false }) {
   const { user, wishlist, toggleWishlist } = useAuth();
-  const wished = wishlist.includes(p.id);
   const tilt = useShoeTilt({ maxYaw: 8, maxPitch: 6 });
   const hoverScale = useTransform(tilt.hover, (v) => 1 + v * 0.04);
   const hoverY = useTransform(tilt.hover, (v) => v * -8);
+
+  // Normalisation : si `product` fourni seul, on le traite comme un groupe d'une seule variante.
+  const variants = useMemo(() => {
+    if (group && Array.isArray(group.variants) && group.variants.length > 0) return group.variants;
+    if (product) return [product];
+    return [];
+  }, [group, product]);
+
+  const [activeId, setActiveId] = useState(variants[0]?.id);
+  // Si la liste de variantes change (ex : filtre couleur dans Catalogue), on resynchronise.
+  useEffect(() => {
+    if (variants.length && !variants.some((v) => v.id === activeId)) {
+      setActiveId(variants[0].id);
+    }
+  }, [variants, activeId]);
+
+  const active = variants.find((v) => v.id === activeId) || variants[0];
+  if (!active) return null;
+
+  const multi = variants.length > 1;
+  const wished = wishlist.includes(active.id);
 
   const onWish = (e) => {
     e.preventDefault();
@@ -20,31 +54,48 @@ export default function ProductCard({ product: p, feature = false }) {
       toast("Créez un compte pour sauvegarder vos produits favoris.");
       return;
     }
-    toggleWishlist(p.id).catch(() => toast.error("Erreur — réessayez"));
+    toggleWishlist(active.id).catch(() => toast.error("Erreur — réessayez"));
   };
+
+  const onPickColor = (e, v) => {
+    // On absorbe le clic pour que la pastille ne déclenche PAS la navigation vers la fiche produit.
+    e.preventDefault();
+    e.stopPropagation();
+    if (v.id !== activeId) setActiveId(v.id);
+  };
+
+  // Index affiché : si groupé, index local au modèle (01/03). Sinon, l'index flat.
+  const indexLabel =
+    multi && active.groupIndex && active.groupCount
+      ? `${active.groupIndex}\u00A0/\u00A0${active.groupCount}`
+      : active.index
+      ? `${active.index}`
+      : null;
 
   return (
     <Link
-      to={`/produit/${p.id}`}
-      data-testid={`product-card-${p.id}`}
+      to={`/produit/${active.id}`}
+      data-testid={`product-card-${active.id}`}
       className="group relative block overflow-hidden border border-black/10 bg-white transition-all duration-500 hover:border-black/40 hover:shadow-[0_24px_48px_rgba(0,0,0,0.07)]"
     >
       <button
         type="button"
         onClick={onWish}
-        data-testid={`wishlist-heart-${p.id}`}
+        data-testid={`wishlist-heart-${active.id}`}
         aria-label="Ajouter à la wishlist"
-        className="absolute top-3 right-3 z-10 flex items-center justify-center w-9 h-9 rounded-full bg-white/90 border border-black/10 hover:border-black/40 transition-all duration-300 cursor-pointer"
+        className="absolute top-2.5 right-2.5 sm:top-3 sm:right-3 z-10 flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/90 border border-black/10 hover:border-black/40 transition-all duration-300 cursor-pointer"
       >
-        <Heart className={`w-4 h-4 transition-colors ${wished ? "fill-black text-black" : "text-black/50"}`} />
+        <Heart className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-colors ${wished ? "fill-black text-black" : "text-black/50"}`} />
       </button>
+
+      {/* Zone image — fond gris très léger pour séparer visuellement les cartes */}
       <div
-        className={`relative flex items-center justify-center overflow-hidden ${
+        className={`relative flex items-center justify-center overflow-hidden bg-[#F5F5F5] ${
           feature ? "aspect-[16/9]" : "aspect-[3/2]"
         }`}
       >
         <div
-          className="absolute w-[75%] h-[75%] rounded-full transition-transform duration-700 group-hover:scale-110"
+          className="absolute w-[75%] h-[75%] rounded-full transition-transform duration-700 group-hover:scale-110 pointer-events-none"
           style={{
             background:
               "radial-gradient(circle, rgba(0,0,0,0.05) 0%, transparent 70%)",
@@ -63,49 +114,119 @@ export default function ProductCard({ product: p, feature = false }) {
             duration={6.5}
             className="absolute inset-0"
           >
-            <ShoeTiltLayer tilt={tilt} hoverScale={0} className="w-full h-full" >
-              <motion.div className="w-full h-full" style={{ scale: hoverScale, y: hoverY }}>
-                <div
-                  className="w-full h-full"
-                  style={{ transform: `scale(${p.scale}) translateY(${p.shiftY})` }}
-                >
-                  <img
-                    src={p.image}
-                    alt={`ZEV SHOP — ${p.name}`}
-                    draggable="false"
-                    loading="lazy"
-                    decoding="async"
-                    className="relative w-full h-full object-contain select-none pointer-events-none will-change-transform"
-                    style={{ filter: `drop-shadow(0 24px 22px ${p.glow})` }}
-                  />
-                </div>
+            <ShoeTiltLayer tilt={tilt} hoverScale={0} className="w-full h-full">
+              <motion.div className="relative w-full h-full" style={{ scale: hoverScale, y: hoverY }}>
+                {/* Carrousel vertical — identique à l'animation ProductStage. */}
+                <AnimatePresence>
+                  <motion.div
+                    key={active.id}
+                    className="absolute inset-0"
+                    initial={{ y: "-135%", scale: 0.94, opacity: 0 }}
+                    animate={{
+                      y: "0%",
+                      scale: 1,
+                      opacity: 1,
+                      transition: {
+                        y: { duration: 0.8, ease: EASE },
+                        scale: { duration: 0.8, ease: EASE },
+                        opacity: { duration: 0.3, ease: "easeOut" },
+                      },
+                    }}
+                    exit={{
+                      y: "135%",
+                      scale: 0.96,
+                      opacity: 0,
+                      transition: {
+                        y: { duration: 0.8, ease: EASE },
+                        scale: { duration: 0.8, ease: EASE },
+                        opacity: { duration: 0.3, delay: 0.5, ease: "easeIn" },
+                      },
+                    }}
+                    data-testid={`product-card-image-${active.id}`}
+                  >
+                    <div
+                      className="w-full h-full"
+                      style={{ transform: `scale(${active.scale}) translateY(${active.shiftY})` }}
+                    >
+                      <img
+                        src={active.image}
+                        alt={`ZEV SHOP — ${active.name}`}
+                        draggable="false"
+                        loading="lazy"
+                        decoding="async"
+                        className="relative w-full h-full object-contain select-none pointer-events-none will-change-transform"
+                        style={{ filter: `drop-shadow(0 24px 22px ${active.glow})` }}
+                      />
+                    </div>
+                  </motion.div>
+                </AnimatePresence>
               </motion.div>
             </ShoeTiltLayer>
           </ShoeFloat>
         </div>
-        <span className="absolute top-4 left-5 font-tech text-[10px] tracking-[0.35em] text-black/35">
-          {p.index}&nbsp;/&nbsp;{String(PRODUCT_COUNT).padStart(2, "0")}
-        </span>
-        <span className="absolute top-4 right-5 flex items-center gap-1.5 font-tech text-[10px] tracking-[0.35em] text-black/70 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-500">
+        {indexLabel && (
+          <span className="absolute top-3 left-3 sm:top-4 sm:left-5 font-tech text-[9px] sm:text-[10px] tracking-[0.3em] sm:tracking-[0.35em] text-black/35">
+            {indexLabel}
+          </span>
+        )}
+        <span className="hidden sm:flex absolute top-4 right-5 items-center gap-1.5 font-tech text-[10px] tracking-[0.35em] text-black/70 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-500">
           VOIR
           <ArrowRight className="w-3.5 h-3.5" />
         </span>
       </div>
-      <div className="px-5 py-4 border-t border-black/10">
-        <h3 className="font-display text-sm sm:text-base font-bold text-black leading-snug truncate">
-          {p.productTitle}
+
+      <div className="px-3 py-3 sm:px-5 sm:py-4 border-t border-black/10">
+        <h3 className="font-display text-[13px] sm:text-base font-bold text-black leading-snug truncate">
+          {active.productTitle}
         </h3>
-        <div className="flex items-center justify-between mt-1.5">
-          <p className="font-tech text-[10px] tracking-[0.25em] text-black/45 uppercase truncate">
-            {p.selectedOptions.Color}
+        <div className="flex items-center justify-between gap-2 mt-1 sm:mt-1.5">
+          <p className="font-tech text-[9px] sm:text-[10px] tracking-[0.2em] sm:tracking-[0.25em] text-black/45 uppercase truncate">
+            {active.selectedOptions.Color}
           </p>
           <p
-            className="font-tech text-[11px] tracking-[0.2em] text-black/55 shrink-0 pl-4"
-            data-testid={`product-card-price-${p.id}`}
+            className="font-tech text-[10px] sm:text-[11px] tracking-[0.15em] sm:tracking-[0.2em] text-black/55 shrink-0"
+            data-testid={`product-card-price-${active.id}`}
           >
-            {priceLabel(p)}
+            {priceLabel(active)}
           </p>
         </div>
+
+        {/* Pastilles de coloris — affichées uniquement si plusieurs variantes */}
+        {multi && (
+          <div
+            className="flex items-center gap-2 sm:gap-2.5 mt-3 sm:mt-3.5 flex-wrap"
+            data-testid={`product-card-swatches-${active.productHandle}`}
+          >
+            {variants.map((v) => {
+              const isActive = v.id === active.id;
+              return (
+                <button
+                  key={v.id}
+                  type="button"
+                  onClick={(e) => onPickColor(e, v)}
+                  aria-label={`Choisir ${v.selectedOptions.Color}`}
+                  aria-pressed={isActive}
+                  data-testid={`product-card-swatch-${v.id}`}
+                  className="relative flex items-center justify-center w-7 h-7 sm:w-6 sm:h-6 rounded-full cursor-pointer transition-transform duration-200 active:scale-95 hover:scale-110 focus:outline-none"
+                  style={{ touchAction: "manipulation" }}
+                >
+                  {/* Zone tactile élargie invisible — garantit 44x44 sur mobile */}
+                  <span aria-hidden="true" className="absolute inset-[-8px] sm:inset-[-6px]" />
+                  <span
+                    aria-hidden="true"
+                    className="w-full h-full rounded-full"
+                    style={{
+                      background: v.swatch,
+                      boxShadow: isActive
+                        ? "0 0 0 1.5px #fff, 0 0 0 2.5px #0A0A0A"
+                        : "inset 0 0 0 1px rgba(0,0,0,0.12)",
+                    }}
+                  />
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
     </Link>
   );

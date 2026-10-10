@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { SlidersHorizontal } from "lucide-react";
 import ProductCard from "@/components/ProductCard";
-import { PRODUCTS, SIZES } from "@/data/products";
+import { GROUPED_PRODUCTS, PRODUCTS, SIZES } from "@/data/products";
 
 const EASE = [0.16, 1, 0.3, 1];
 
@@ -39,16 +39,37 @@ export default function Catalogue() {
   const [sort, setSort] = useState("pertinence");
   const [showFilters, setShowFilters] = useState(false);
 
-  const products = useMemo(() => {
-    let list = [...PRODUCTS];
-    if (tab === "chaussures") list = list; // toutes les TN sont des chaussures
-    else if (tab !== "tous" && tab !== "nouveautes") {
-      if (["meilleures", "promotions", "vetements", "accessoires"].includes(tab)) list = [];
-      if (tab === "nouveautes") list = list;
+  // Grouped products — chaque entrée = un modèle avec toutes ses variantes de coloris.
+  // Le filtrage s'applique au niveau du groupe : on garde un groupe si au moins
+  // une variante satisfait les filtres actifs ; le groupe est alors enrichi d'une
+  // propriété `_initialVariantId` (future amélioration) — pour l'instant la carte
+  // sélectionne automatiquement la première variante disponible.
+  const groups = useMemo(() => {
+    let list = [...GROUPED_PRODUCTS];
+    if (tab !== "tous" && tab !== "nouveautes") {
+      if (tab === "chaussures") {
+        list = list.filter((g) => g.productType === "SNEAKERS");
+      } else if (["meilleures", "promotions", "vetements", "accessoires"].includes(tab)) {
+        list = [];
+      }
     }
-    if (fColor) list = list.filter((p) => p.selectedOptions.Color === fColor);
-    if (fSize) list = list; // toutes les TN existent en 40-46
-    if (fAvail) list = list.filter((p) => p.available);
+    if (fColor) {
+      list = list
+        .map((g) => {
+          const matches = g.variants.filter((v) => v.selectedOptions.Color === fColor);
+          return matches.length ? { ...g, variants: matches } : null;
+        })
+        .filter(Boolean);
+    }
+    if (fAvail) {
+      list = list
+        .map((g) => {
+          const matches = g.variants.filter((v) => v.available);
+          return matches.length ? { ...g, variants: matches } : null;
+        })
+        .filter(Boolean);
+    }
+    if (fSize) list = list; // toutes les tailles 40-46 sont disponibles
     if (sort === "prix-asc" || sort === "prix-desc") {
       // tri par prix inactif tant que les prix ne sont pas définis
       list = list;
@@ -57,6 +78,7 @@ export default function Catalogue() {
   }, [tab, fColor, fSize, fAvail, sort]);
 
   const priceSortInactive = sort === "prix-asc" || sort === "prix-desc" || sort === "ventes";
+  const totalCount = groups.length;
 
   return (
     <div className="min-h-screen pt-40 pb-24 px-6 sm:px-10 max-w-[1400px] mx-auto">
@@ -206,27 +228,27 @@ export default function Catalogue() {
         </motion.div>
       )}
 
-      {priceSortInactive && products.length > 0 && (
+      {priceSortInactive && groups.length > 0 && (
         <p className="font-tech text-[9px] tracking-[0.25em] text-black/35 mt-4 text-center" data-testid="sort-note">
           Tri par prix / ventes : à définir — les prix ne le sont pas encore.
         </p>
       )}
 
-      {/* grille produits */}
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6 mt-12" data-testid="catalogue-grid">
-        {products.map((p, i) => (
+      {/* grille produits — groupés par modèle, swatches dans chaque carte */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mt-12" data-testid="catalogue-grid">
+        {groups.map((g, i) => (
           <motion.div
-            key={p.id}
+            key={g.handle}
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9, delay: 0.1 + i * 0.07, ease: EASE }}
           >
-            <ProductCard product={p} />
+            <ProductCard group={g} />
           </motion.div>
         ))}
       </div>
 
-      {products.length === 0 && (
+      {groups.length === 0 && (
         <div className="mt-16 border border-dashed border-black/15 rounded-3xl py-20 px-8 text-center" data-testid="catalogue-empty">
           <p className="font-tech text-[11px] tracking-[0.25em] text-black/45">
             {EMPTY_NOTE[tab] || "Aucun produit dans cette sélection pour le moment."}

@@ -1,7 +1,7 @@
 import { Link, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import ProductCard from "@/components/ProductCard";
-import { PRODUCTS } from "@/data/products";
+import { GROUPED_PRODUCTS } from "@/data/products";
 import { VETEMENTS, ACCESSOIRES } from "@/components/Header";
 
 const EASE = [0.16, 1, 0.3, 1];
@@ -45,17 +45,17 @@ export default function CategoryPage() {
             transition={{ duration: 1, delay: 0.3 }}
             className="font-tech text-[10px] tracking-[0.35em] text-black/35 mt-5 text-center"
           >
-            COLLECTION&nbsp;TN&nbsp;//&nbsp;QUATRE&nbsp;COLORIS
+            COLLECTION&nbsp;SNEAKERS&nbsp;//&nbsp;TOUS&nbsp;LES&nbsp;MODÈLES
           </motion.p>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6 mt-14">
-            {PRODUCTS.map((p, i) => (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mt-14">
+            {GROUPED_PRODUCTS.filter((g) => g.productType === "SNEAKERS").map((g, i) => (
               <motion.div
-                key={p.id}
+                key={g.handle}
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.9, delay: 0.2 + i * 0.08, ease: EASE }}
               >
-                <ProductCard product={p} />
+                <ProductCard group={g} />
               </motion.div>
             ))}
           </div>

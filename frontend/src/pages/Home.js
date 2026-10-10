@@ -11,7 +11,7 @@ import introExtRight from "@/assets/intro-ext-right.jpg";
 import zlogoWhite from "@/assets/zlogo-white.png";
 import ProductCard from "@/components/ProductCard";
 import Marquee from "@/components/Marquee";
-import { PRODUCTS } from "@/data/products";
+import { PRODUCTS, GROUPED_PRODUCTS } from "@/data/products";
 
 const EASE = [0.16, 1, 0.3, 1];
 
@@ -146,8 +146,12 @@ function Hero() {
   );
 }
 
-/* Sections produit génériques — fonctionnent automatiquement avec de vraies données */
-function ProductSection({ id, eyebrow, title, products, emptyNote, testid }) {
+/* Sections produit génériques — fonctionnent automatiquement avec de vraies données.
+   `items` peut être soit une liste de groupes (nouveau format, GROUPED_PRODUCTS), soit
+   une liste plate de variantes (compat ascendante). La carte sait traiter les deux. */
+function ProductSection({ id, eyebrow, title, items, emptyNote, testid }) {
+  const list = items || [];
+  const isGrouped = list.length > 0 && Array.isArray(list[0].variants);
   return (
     <section id={id} className="relative px-6 sm:px-10 py-20 sm:py-28 max-w-[1400px] mx-auto" data-testid={testid}>
       <div className="flex items-end justify-between mb-10 sm:mb-14">
@@ -165,11 +169,15 @@ function ProductSection({ id, eyebrow, title, products, emptyNote, testid }) {
           <ArrowRight className="w-4 h-4" />
         </Link>
       </div>
-      {products.length > 0 ? (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6">
-          {products.map((p) => (
-            <ProductCard key={p.id} product={p} />
-          ))}
+      {list.length > 0 ? (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+          {list.map((p) =>
+            isGrouped ? (
+              <ProductCard key={p.handle} group={p} />
+            ) : (
+              <ProductCard key={p.id} product={p} />
+            ),
+          )}
         </div>
       ) : (
         <div className="border border-dashed border-black/15 rounded-3xl py-16 px-8 text-center">
@@ -432,21 +440,21 @@ export default function Home() {
         testid="nouveautes-section"
         eyebrow="DERNIERS PRODUITS"
         title="Nouveautés"
-        products={PRODUCTS}
+        items={GROUPED_PRODUCTS}
         emptyNote="Les nouveautés s'afficheront automatiquement."
       />
       <ProductSection
         testid="bestsellers-section"
         eyebrow="LES PLUS DEMANDÉS"
         title="Meilleures ventes"
-        products={bestsellers}
+        items={bestsellers}
         emptyNote="Cette sélection s'affichera automatiquement dès que les données de ventes seront disponibles."
       />
       <ProductSection
         testid="recommendations-section"
         eyebrow="SÉLECTION POUR VOUS"
         title="Recommandations"
-        products={recommended}
+        items={recommended}
         emptyNote="Les recommandations s'afficheront automatiquement dès que les données seront disponibles."
       />
       <Categories />

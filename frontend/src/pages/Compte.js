@@ -249,7 +249,7 @@ function Dashboard() {
       {tab === "wishlist" && (
         <div data-testid="account-wishlist">
           {wishProducts.length > 0 ? (
-            <div className="grid sm:grid-cols-2 gap-5 sm:gap-6">
+            <div className="grid grid-cols-2 gap-3 sm:gap-6">
               {wishProducts.map((p) => (
                 <ProductCard key={p.id} product={p} />
               ))}
